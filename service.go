@@ -1,4 +1,4 @@
-package servicemux
+package services
 
 import (
 	"fmt"
@@ -26,13 +26,19 @@ func (s *service) runAction(res http.ResponseWriter, req *http.Request) bool {
 
 var serviceMap = make(map[string]service)
 
-func AddService(Domain string, Service func(http.ResponseWriter, *http.Request), ports ...string) {
+// AddService adds a service to the service list
+// Arguments:
+// Domain string: domain name in format 'domain.com', Domain '*' is a wildcard for all
+// Service func: function runs when there is a connection to this service
+// Ports ...string: slice of allowed ports, port '*' is a wildcard for all
+func AddService(Domain string, Service func(http.ResponseWriter, *http.Request), Ports ...string) {
 	serviceMap[Domain] = service{
 		action: Service,
-		ports:  ports,
+		ports:  Ports,
 	}
 }
 
+// Run is a function that shound be run on every http query
 func Run(res http.ResponseWriter, req *http.Request) {
 	if val, ok := serviceMap[strings.Split(req.Host, ":")[0]]; ok {
 		if val.runAction(res, req) {
